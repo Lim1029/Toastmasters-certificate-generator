@@ -136,8 +136,8 @@ def generate_participation_cert(name_list,event_name,date,venue,issuer,issuer_ti
         
     compress(filelist)
 
-def generate_award_cert(name_best_TT,name_best_speech,name_best_evaluator,club_name,date,venue,issuer,issuer_title,signature,
-                                size_name_list,size_event,size_date_venue):
+def generate_award_cert(name_best_TT,name_best_speech,name_best_evaluator,club_name,date,issuer,
+                                size_name_list,size_club_name):
     filelist = []
     for name in name_best_TT.split('\n'):
         packet = io.BytesIO()
@@ -146,7 +146,7 @@ def generate_award_cert(name_best_TT,name_best_speech,name_best_evaluator,club_n
         can.setFont('MontserratEB', size_name_list)
         can.drawCentredString(540, 300, name.upper())
 
-        can.setFont('MontserratB', size_event)
+        can.setFont('MontserratB', size_club_name)
         can.drawCentredString(540, 200, club_name)
 
         can.setFont('MontserratR', 20)
@@ -184,7 +184,7 @@ def generate_award_cert(name_best_TT,name_best_speech,name_best_evaluator,club_n
         can.setFont('MontserratEB', size_name_list)
         can.drawCentredString(540, 300, name.upper())
 
-        can.setFont('MontserratB', size_event)
+        can.setFont('MontserratB', size_club_name)
         can.drawCentredString(540, 200, club_name)
 
         can.setFont('MontserratR', 20)
@@ -222,7 +222,7 @@ def generate_award_cert(name_best_TT,name_best_speech,name_best_evaluator,club_n
         can.setFont('MontserratEB', size_name_list)
         can.drawCentredString(540, 300, name.upper())
 
-        can.setFont('MontserratB', size_event)
+        can.setFont('MontserratB', size_club_name)
         can.drawCentredString(540, 200, club_name)
 
         can.setFont('MontserratR', 20)
@@ -273,9 +273,15 @@ with tab1:
         submitted = st.form_submit_button('Submit')
 
         if submitted:
-            generate_award_cert(name_list,event_name,date,venue,issuer,issuer_title,signature,
+            generate_participation_cert(name_list,event_name,date,venue,issuer,issuer_title,signature,
                                         size_name_list,size_event,size_date_venue)
-    
+    if "cert.zip" in os.listdir() and submitted:
+        with open("cert.zip", "rb") as fp:
+            btn = st.download_button(
+                label="Download Cert",
+                data=fp,
+                file_name="cert.zip"
+            )
 with tab2:
     with st.form('my_form_award'):
         name_best_TT = st.text_area('Enter names of best table topics speaker(s), separated by line:', 'Sithi\nMei Ling')
@@ -283,23 +289,21 @@ with tab2:
         name_best_evaluator = st.text_area('Enter names best evaluator(s), separated by line:', 'Chris\nRyan')
         size_name_list = st.slider('Name Font size?', 0, 80, 30)
         club_name = st.text_area('Enter club name:', 'Malaysia Toastmasters Club')
-        size_event = st.slider('Event Font size?', 0, 80, 20)
+        size_club_name = st.slider('Club Name Font size?', 0, 80, 20)
         date = st.text_area('Enter date:', '27 Sep 2023')
         venue = st.text_area('Enter venue:', 'Zoom (Online)')
         size_date_venue = st.slider('Date Venue Font size?', 0, 80, 30)
         issuer = st.text_area('Enter issuer:', 'Michael Jay')
-        issuer_title = st.text_area('Enter issuer_title:', 'President')
-        signature = st.text_area('Enter signature name:', 'Michael')
         submitted = st.form_submit_button('Submit Award Form')
 
         if submitted:
-            generate_award_cert(name_best_TT,name_best_speech,name_best_evaluator,club_name,date,venue,issuer,issuer_title,signature,
-                                        size_name_list,size_event,size_date_venue)
+            generate_award_cert(name_best_TT,name_best_speech,name_best_evaluator,club_name,date,issuer,
+                                size_name_list,size_club_name)
 
-if "cert.zip" in os.listdir() and submitted:
-    with open("cert.zip", "rb") as fp:
-        btn = st.download_button(
-            label="Download Cert",
-            data=fp,
-            file_name="cert.zip"
-        )
+    if "cert.zip" in os.listdir() and submitted:
+        with open("cert.zip", "rb") as fp:
+            btn = st.download_button(
+                label="Download Cert",
+                data=fp,
+                file_name="cert.zip"
+            )
