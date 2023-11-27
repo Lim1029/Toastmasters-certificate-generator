@@ -136,6 +136,56 @@ def generate_participation_cert(name_list,event_name,date,venue,issuer,issuer_ti
         
     compress(filelist)
 
+def generate_appreciation_cert(name_list,event_name,date,venue,issuer,issuer_title,signature,
+                                size_name_list,size_event,size_date_venue):
+    filelist = []
+    for name in name_list.split('\n'):
+        packet = io.BytesIO()
+        # Create a new PDF with Reportlab
+        can = canvas.Canvas(packet, pagesize=(A4[1], A4[0]))
+        can.setFont('MontserratEB', size_name_list)
+        can.drawCentredString(550, 325, name.upper())
+
+        can.setFont('MontserratB', size_event)
+        can.drawCentredString(550, 235, event_name)
+
+        can.setFont('MontserratR', size_date_venue)
+        can.drawCentredString(550, 185, f'on {date} at {venue}')
+
+        can.setFont('MontserratR', 20)
+        can.drawCentredString(380, 70, date)
+
+        can.setFont('Allison', 40)
+        can.drawCentredString(722, 70, signature)
+
+        can.setFont('MontserratR', 15)
+        can.drawCentredString(722, 33, f"{issuer}")
+        can.drawCentredString(722, 13, f"{issuer_title}")
+
+        can.showPage()
+        can.save()
+
+        # Move to the beginning of the StringIO buffer
+        packet.seek(0)
+        new_pdf = PdfReader(packet)
+        # Read your existing PDF
+        existing_pdf = PdfReader(open("Appreciation Cert.pdf", "rb"))
+        output = PdfWriter()
+        # Add the "watermark" (which is the new pdf) on the existing page
+        page = existing_pdf.pages[0]
+        page.merge_page(new_pdf.pages[0])
+        output.add_page(page)
+        # Finally, write "output" to a real file
+        outputStream = open(f"participation_{name}.pdf", "wb")
+        output.write(outputStream)
+        outputStream.close()
+        filelist.append(f"participation_{name}.pdf")
+        # with open(f"participation_{name}.pdf",'rb') as cert:
+        image = convert_from_path(f"participation_{name}.pdf")
+        st.image(image)
+        
+    compress(filelist)
+
 def generate_award_cert(name_best_TT,name_best_speech,name_best_evaluator,club_name,date,issuer,
                                 size_name_list,size_club_name):
     filelist = []
@@ -256,7 +306,7 @@ def generate_award_cert(name_best_TT,name_best_speech,name_best_evaluator,club_n
 
     compress(filelist)
 
-tab1, tab2 = st.tabs(["Participation", "Awards"]) 
+tab1, tab2, tab3 = st.tabs(["Participation", "Awards", "Appreciation"]) 
 
 with tab1:
     with st.form('my_form_participation'):
@@ -300,6 +350,31 @@ with tab2:
             generate_award_cert(name_best_TT,name_best_speech,name_best_evaluator,club_name,date,issuer,
                                 size_name_list,size_club_name)
 
+    if "cert.zip" in os.listdir() and submitted:
+        with open("cert.zip", "rb") as fp:
+            btn = st.download_button(
+                label="Download Cert",
+                data=fp,
+                file_name="cert.zip"
+            )
+
+with tab3:
+    with st.form('my_form_appreciation'):
+        name_list = st.text_area('Enter names, separated by line:', 'Ali\nAh Kau\nMuthu')
+        size_name_list = st.slider('Name Font size?', 0, 80, 40)
+        event_name = st.text_area('Enter event name:', 'Malaysia Toastmasters Meeting 366')
+        size_event = st.slider('Event Font size?', 0, 80, 30)
+        date = st.text_area('Enter date:', '27 Sep 2023')
+        venue = st.text_area('Enter venue:', 'Zoom (Online)')
+        size_date_venue = st.slider('Date Venue Font size?', 0, 80, 30)
+        issuer = st.text_area('Enter issuer:', 'Michael Jay')
+        issuer_title = st.text_area('Enter issuer_title:', 'President')
+        signature = st.text_area('Enter signature name:', 'Michael')
+        submitted = st.form_submit_button('Submit')
+
+        if submitted:
+            generate_appreciation_cert(name_list,event_name,date,venue,issuer,issuer_title,signature,
+                                        size_name_list,size_event,size_date_venue)
     if "cert.zip" in os.listdir() and submitted:
         with open("cert.zip", "rb") as fp:
             btn = st.download_button(
